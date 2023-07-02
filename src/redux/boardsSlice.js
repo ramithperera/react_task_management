@@ -36,13 +36,18 @@ const boardSlice = createSlice({
       });
     },
     addTask: (state, action) => {
-      const { title, status, description, subtasks, newColIndex } =
-        action.payload;
+      const { title, status, description, subtasks, newColIndex } = action.payload;
       const task = { title, description, subtasks, status };
       const board = state.find((board) => board.isActive);
       const column = board.columns.find((col, index) => index === newColIndex);
+    
+      // Check if the 'tasks' array exists, if not, create it
+      if (!column.tasks) {
+        column.tasks = [];
+      }
+    
       column.tasks.push(task);
-    },
+    },    
     editTask: (state, action) => {
       const {
         title,

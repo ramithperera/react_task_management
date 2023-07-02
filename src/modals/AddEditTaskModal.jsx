@@ -4,21 +4,26 @@ import crossIcon from '../assets/icon-cross.svg'
 import { useDispatch, useSelector } from "react-redux";
 import boardSlice from "../redux/boardsSlice";
 
-function AddEditTaskModal({ type, device, setOpenAddEditTask, taskIndex,
-     pervColIndex = 0 }) {
+function AddEditTaskModal({ type, device, setOpenAddEditTask, setIsTaskModalOpen, taskIndex,
+     prevColIndex = 0 }) {
 
+  const [isFirstLoad, setIsFirstLoad] = useState(true)
   const dispatch = useDispatch()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [isValid, setIsValid] = useState(true)
 
 
-  const board = useSelector((state) => state.boards).find((board) => board.isActive)
+  const board = useSelector((state) => state.boards.find((board) => board.isActive))
+  
 
   const columns = board.columns
-  const col = columns.find((col, index) => index === pervColIndex)
-  const [status, setStatus] = useState(columns[pervColIndex].name)
-  const [newColIndex, setNewColIndex] = useState(pervColIndex)
+  const col = columns.find((col, index) => index === prevColIndex)
+
+  const task = col && col.tasks ? col.tasks.find((task, index) => index === taskIndex) : {};
+
+  const [status, setStatus] = useState(columns[prevColIndex].name)
+  const [newColIndex, setNewColIndex] = useState(prevColIndex)
 
   const [subtasks, setSubtasks] = useState(
     [
@@ -26,6 +31,17 @@ function AddEditTaskModal({ type, device, setOpenAddEditTask, taskIndex,
         {title: '', isCompleted: false, id: uuidv4()},
     ]
   )
+
+  if (type === 'edit' && isFirstLoad){
+    setSubtasks(
+        task.subtasks.map((subtask) => {
+            return {...subtask, id: uuidv4()}
+        })
+    )
+    setTitle(task.title)
+    setDescription(task.description)
+    setIsFirstLoad(false)
+  }
 
   const onChange = (id, newValue) => {
     setSubtasks((pervState) => {
@@ -78,7 +94,7 @@ function AddEditTaskModal({ type, device, setOpenAddEditTask, taskIndex,
                 subtasks,
                 status,
                 taskIndex,
-                pervColIndex,
+                prevColIndex,
                 newColIndex
             })
         )
